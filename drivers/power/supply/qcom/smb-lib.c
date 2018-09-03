@@ -3939,8 +3939,8 @@ static void smblib_force_legacy_icl(struct smb_charger *chg, int pst)
 		#endif
 		break;
 	default:
-		smblib_err(chg, "Unknown APSD %d; forcing 500mA\n", pst);
-		vote(chg->usb_icl_votable, LEGACY_UNKNOWN_VOTER, true, 500000);
+		smblib_err(chg, "Unknown APSD %d; forcing suspend\n", pst);
+		vote(chg->usb_icl_votable, LEGACY_UNKNOWN_VOTER, true, 0);
 		break;
 	}
 }
@@ -4024,7 +4024,7 @@ static void smblib_handle_apsd_done(struct smb_charger *chg, bool rising)
 			smblib_set_prop_pd_active(chg, &pval);
 			chg->float_rerun_apsd = false;
 		} else if (apsd_result->bit & FLOAT_CHARGER_BIT) {
-			vote(chg->usb_icl_votable, LEGACY_UNKNOWN_VOTER, true, 500000);
+			vote(chg->usb_icl_votable, LEGACY_UNKNOWN_VOTER, true, 0);
 			chg->float_rerun_apsd = false;
 			smblib_err(chg, "rerun apsd still float\n");
 		}
