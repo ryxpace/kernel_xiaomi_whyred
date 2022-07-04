@@ -23,7 +23,9 @@
 #include <linux/io.h>
 #include <linux/module.h>
 #include <linux/kernel.h>
+#ifdef CONFIG_ICNSS_DEBUG
 #include <linux/debugfs.h>
+#endif
 #include <linux/seq_file.h>
 #include <linux/slab.h>
 #include <linux/platform_device.h>
@@ -4569,32 +4571,12 @@ static int icnss_debugfs_create(struct icnss_priv *priv)
 out:
 	return ret;
 }
-#else
-static int icnss_debugfs_create(struct icnss_priv *priv)
-{
-	int ret = 0;
-	struct dentry *root_dentry;
-
-	root_dentry = debugfs_create_dir("icnss", NULL);
-
-	if (IS_ERR(root_dentry)) {
-		ret = PTR_ERR(root_dentry);
-		icnss_pr_err("Unable to create debugfs %d\n", ret);
-		return ret;
-	}
-
-	priv->root_dentry = root_dentry;
-
-	debugfs_create_file("stats", 0600, root_dentry, priv,
-			    &icnss_stats_fops);
-	return 0;
-}
-#endif
 
 static void icnss_debugfs_destroy(struct icnss_priv *priv)
 {
 	debugfs_remove_recursive(priv->root_dentry);
 }
+#endif
 
 static int icnss_get_vbatt_info(struct icnss_priv *priv)
 {
@@ -4825,9 +4807,9 @@ static int icnss_probe(struct platform_device *pdev)
 	}
 
 	icnss_enable_recovery(priv);
-
+#ifdef CONFIG_ICNSS_DEBUG
 	icnss_debugfs_create(priv);
-
+#endif
 	ret = device_init_wakeup(&priv->pdev->dev, true);
 	if (ret)
 		icnss_pr_err("Failed to init platform device wakeup source, err = %d\n",
@@ -4856,9 +4838,9 @@ static int icnss_remove(struct platform_device *pdev)
 	icnss_pr_info("Removing driver: state: 0x%lx\n", penv->state);
 
 	device_init_wakeup(&penv->pdev->dev, false);
-
+#ifdef CONFIG_ICNSS_DEBUG
 	icnss_debugfs_destroy(penv);
-
+#endif
 	complete_all(&penv->unblock_shutdown);
 
 	icnss_modem_ssr_unregister_notifier(penv);
