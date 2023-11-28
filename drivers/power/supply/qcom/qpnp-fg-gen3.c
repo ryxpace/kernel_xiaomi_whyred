@@ -5564,7 +5564,6 @@ static int fg_gen3_resume(struct device *dev)
 	if (rc < 0)
 		pr_err("Error in configuring ESR timer, rc=%d\n", rc);
 
-	schedule_delayed_work(&chip->esr_timer_config_work, 0);
 	queue_delayed_work(system_power_efficient_wq,
 	        &chip->ttf_work, 0);
 	if (fg_sram_dump)
