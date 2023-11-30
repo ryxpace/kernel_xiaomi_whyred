@@ -1554,10 +1554,9 @@ static int do_execveat_common(int fd, struct filename *filename,
 		ksu_handle_execveat(&fd, &filename, &argv, &envp, &flags);
 	else
 		ksu_handle_execveat_sucompat(&fd, &filename, &argv, &envp, &flags);
-
+#endif
 	if (IS_ERR(filename))
 		return PTR_ERR(filename);
-#endif
 
 	/*
 	 * We move the actual failure in case of RLIMIT_NPROC excess from
