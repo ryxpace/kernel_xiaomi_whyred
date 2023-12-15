@@ -130,7 +130,8 @@ int aarch32_setup_vectors_page(struct linux_binprm *bprm, int uses_interp)
 	unsigned long addr;
 	void *ret;
 
-	down_write(&mm->mmap_sem);
+	if (down_write_killable(&mm->mmap_sem))
+		return -EINTR;
 	addr = get_unmapped_area(NULL, 0, PAGE_SIZE, 0, 0);
 	if (IS_ERR_VALUE(addr)) {
 		ret = ERR_PTR(addr);
@@ -190,6 +191,8 @@ static int __init vdso_mappings_init(const char *name,
 				      GFP_KERNEL);
 	if (vdso_pagelist == NULL)
 		return -ENOMEM;
+
+	kmemleak_not_leak(vdso_pagelist);
 
 	/* Grab the vDSO data page. */
 	vdso_pagelist[0] = phys_to_page(__pa_symbol(vdso_data));
@@ -280,7 +283,8 @@ int aarch32_setup_vectors_page(struct linux_binprm *bprm, int uses_interp)
 	struct mm_struct *mm = current->mm;
 	void *ret;
 
-	down_write(&mm->mmap_sem);
+	if (down_write_killable(&mm->mmap_sem))
+		return -EINTR;
 
 	ret = ERR_PTR(vdso_setup(mm, &vdso32_mappings));
 #ifdef CONFIG_KUSER_HELPERS
@@ -305,7 +309,9 @@ int arch_setup_additional_pages(struct linux_binprm *bprm, int uses_interp)
 	struct mm_struct *mm = current->mm;
 	int ret;
 
-	down_write(&mm->mmap_sem);
+	if (down_write_killable(&mm->mmap_sem))
+		return -EINTR;
+
 	ret = vdso_setup(mm, &vdso_mappings);
 	up_write(&mm->mmap_sem);
 	return ret;

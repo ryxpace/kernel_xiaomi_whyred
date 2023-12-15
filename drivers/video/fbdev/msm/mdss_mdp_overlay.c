@@ -1851,9 +1851,9 @@ static bool __is_roi_valid(struct mdss_mdp_pipe *pipe,
 		mdss_mdp_intersect_rect(&res, &dst, &roi);
 
 		if (!mdss_rect_cmp(&res, &dst)) {
-			pr_err("error. pipe%d has scaling and its output is interesecting with roi.\n",
+			pr_debug("error. pipe%d has scaling and its output is interesecting with roi.\n",
 				pipe->num);
-			pr_err("pipe_dst:-> %d %d %d %d roi:-> %d %d %d %d\n",
+			pr_debug("pipe_dst:-> %d %d %d %d roi:-> %d %d %d %d\n",
 				dst.x, dst.y, dst.w, dst.h,
 				roi.x, roi.y, roi.w, roi.h);
 			ret = false;
@@ -2274,7 +2274,7 @@ static void __validate_and_set_roi(struct msm_fb_data_type *mfd,
 
 		if (!__is_roi_valid(pipe, &l_roi, &r_roi)) {
 			skip_partial_update = true;
-			pr_err("error. invalid pu config for pipe:%d dst:{%d,%d,%d,%d} dual_pu_roi:%d\n",
+			pr_debug("error. invalid pu config for pipe:%d dst:{%d,%d,%d,%d} dual_pu_roi:%d\n",
 				pipe->num, pipe->dst.x, pipe->dst.y,
 				pipe->dst.w, pipe->dst.h,
 				dual_roi->enabled);
@@ -4013,6 +4013,12 @@ static ssize_t mdss_mdp_cmd_autorefresh_store(struct device *dev,
 	struct fb_info *fbi = dev_get_drvdata(dev);
 	struct msm_fb_data_type *mfd = (struct msm_fb_data_type *)fbi->par;
 	struct mdss_mdp_ctl *ctl;
+
+	/*
+	 * The event timer was killed due to messing with pm qos, and no one
+	 * uses autorefresh anyway.
+	 */
+	return -EINVAL;
 
 	if (!mfd) {
 		pr_err("Invalid mfd structure\n");
@@ -6623,6 +6629,8 @@ int mdss_mdp_overlay_init(struct msm_fb_data_type *mfd)
 
 	mdss_irq = mdss_intr_line();
 
+	/* This is for an unused feature (autorefresh) and breaks pm qos */
+#if 0
 	/* Adding event timer only for primary panel */
 	if ((mfd->index == 0) && (mfd->panel_info->type != WRITEBACK_PANEL)) {
 		mdp5_data->cpu_pm_hdl = add_event_timer(mdss_irq->irq,
@@ -6630,6 +6638,7 @@ int mdss_mdp_overlay_init(struct msm_fb_data_type *mfd)
 		if (!mdp5_data->cpu_pm_hdl)
 			pr_warn("%s: unable to add event timer\n", __func__);
 	}
+#endif
 
 	if (mfd->panel_info->cont_splash_enabled) {
 		rc = mdss_mdp_overlay_handoff(mfd);
