@@ -5678,7 +5678,7 @@ static ssize_t fwu_sysfs_read_lockdown_code_show(struct device *dev,
 {
 	unsigned short lockdown_data_size;
 	unsigned char *lockdown_data;
-	char ld_val[2];
+	char ld_val[3];
 	int retval = 0;
 	int i = 0;
 
