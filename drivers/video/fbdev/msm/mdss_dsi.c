@@ -2328,6 +2328,7 @@ static irqreturn_t test_hw_vsync_handler(int irq, void *data)
 	if (pdata->next)
 		complete_all(&pdata->next->te_done);
 	return IRQ_HANDLED;
+}
 
 static int mdss_dsi_disp_wake_thread(void *data)
 {
